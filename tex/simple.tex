@@ -1,0 +1,60 @@
+\documentclass[11pt, a4paper]{article}
+\usepackage{tikz}
+\usepackage{qrcode}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+
+\setCJKmainfont{Noto Sans CJK SC}
+\setCJKfamilyfont{referencefont}{Noto Sans CJK SC}
+\setmainfont{Times New Roman}
+\usetikzlibrary{math}
+\pagestyle{empty}
+
+% string concatenation
+\newcommand{\concat}[2]{#1#2}
+% set variables
+\newcommand{\scaleratio}{1.35}
+\newcommand{\headerwidth}{14}
+\newcommand{\headerheight}{1.5}
+\newcommand{\tablewidth}{14}
+\newcommand{\tableheight}{18}
+\newcommand{\tabletitle}{手写字符采集表}
+\newcommand{\tablecomment}{请使用黑色签字笔填写}
+\tikzmath { % compute global variables
+	\commentwidth = \headerwidth / 2;
+	\qrwidth = \headerheight * 0.85 * \scaleratio;
+	\qrX = \headerheight / 2;
+	\qrY = \headerheight / 2 + \tableheight;
+}
+
+\begin{document}
+	\begin{tikzpicture}[remember picture, overlay]% draw page
+	\draw (current page.center) node {
+		\begin{tikzpicture}[remember picture=false, overlay=false, scale=\scaleratio]
+		% draw frame
+		\draw[very thick] (0, 0) rectangle (\tablewidth, \tableheight + \headerheight);
+		% draw header
+		% draw QRCode with page info embeded
+		\draw (\qrX, \qrY) node {\qrcode[height=\concat{\qrwidth}{cm}]{page info}};
+		% draw table title
+		\draw (\headerheight, \tableheight + \headerheight / 2) node[above right] {\LARGE \tabletitle};
+		% draw table comment
+		\draw (\headerheight, \tableheight + \headerheight / 2) node[below right] {\small
+			\begin{minipage}{\concat{\commentwidth}{cm}}
+			\tablecomment
+			\end{minipage}
+		};
+		% draw page info
+		\draw (\headerwidth, \tableheight) node[above left] {\small page info};
+		% draw grid
+		\clip (0, 0) rectangle (\tablewidth, \tableheight);
+		\draw[dashed, black!25!white] (0, 0) grid (\tablewidth, \tableheight);
+		\draw[dotted, black!35!white, xshift=0.5cm, yshift=0.5cm] (-1, -1) grid (\tablewidth, \tableheight);
+		\draw[very thick] (0, 0) rectangle (\tablewidth, \tableheight);
+		% draw reference characters
+		\draw (1.5, 0.5) node {\CJKfamily{referencefont} \LARGE \char"AC01};
+		\end{tikzpicture}
+	};
+	\end{tikzpicture}
+	%\newpage
+\end{document}

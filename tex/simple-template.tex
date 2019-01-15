@@ -1,0 +1,92 @@
+% ---
+% # YAML header, default values for template
+% title: Handwritten Character Acquisition
+% comment: Please write with a black pen
+% date: 2019-01-11 09:58
+% version: mfu-ref
+% layout:
+%   scale: 1.34
+%   logic_written_area: [9, 14]  # h x w, logic ratio -> acquisition area: 18 x 14
+%   logic_header_area: [1.5, 14]
+%   qrcode: true
+% fonts:
+%   global: Noto Sans CJK SC
+%   reference: Noto Sans CJK SC
+% data:
+%   type: unicode_value
+%   raw: [AC01, AC02]
+% ---
+\documentclass[11pt, a4paper]{article}
+\usepackage{tikz}
+\usepackage{qrcode}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+
+\setCJKmainfont{\var{fonts.global}}
+\setCJKfamilyfont{referencefont}{\var{fonts.reference}}
+\setmainfont{Times New Roman}
+\usetikzlibrary{math}
+\pagestyle{empty}
+
+% string concatenation
+\newcommand{\concat}[2]{#1#2}
+% set variables
+\newcommand{\scaleratio}{\var{layout.scale}}
+\newcommand{\headerwidth}{\var{layout.logic_header_area[1]}}
+\newcommand{\headerheight}{\var{layout.logic_header_area[0]}}
+\newcommand{\tablewidth}{\var{layout.logic_written_area[1]}}
+\newcommand{\tableheight}{\var{layout.logic_written_area[0] * 2}}
+\newcommand{\tabletitle}{\var{title}}
+\newcommand{\tablecomment}{\var{comment}}
+\tikzmath { % compute global variables
+	\commentwidth = \headerwidth / 2;
+	\qrwidth = \headerheight * 0.85 * \scaleratio;
+	\qrX = \headerheight / 2;
+	\qrY = \headerheight / 2 + \tableheight;
+}
+
+\begin{document}
+	%% set logic_written_height = layout.logic_written_area[0]
+    %% set logic_written_width = layout.logic_written_area[1]
+    %% set page_capacity = layout.logic_written_area[0] * layout.logic_written_area[1]
+    %% set num_chars = data.raw | length
+    %% set num_pages = (num_chars / page_capacity) | round(0, 'ceil') | int
+    %% for page_id in range(num_pages)
+    %%     set chars = data.raw[page_capacity * page_id: page_capacity * (page_id + 1)]
+    %%     set page_signature = ('v%s,p%s' | format(version, page_id + 1))
+    % page#\var{page_id}/\var{num_pages}, chars#\var{num_chars}
+	\begin{tikzpicture}[remember picture, overlay]
+	\draw (current page.center) node {
+		\begin{tikzpicture}[remember picture=false, overlay=false, scale=\scaleratio]
+		% draw frame
+		\draw[very thick] (0, 0) rectangle (\tablewidth, \tableheight + \headerheight);
+		% draw header
+		% draw QRCode with page info embeded
+		\draw (\qrX, \qrY) node {\qrcode[height=\concat{\qrwidth}{cm}]{\var{page_signature}}};
+		% draw table title
+		\draw (\headerheight, \tableheight + \headerheight / 2) node[above right] {\LARGE \tabletitle};
+		% draw table comment
+		\draw (\headerheight, \tableheight + \headerheight / 2) node[below right] {\small
+			\begin{minipage}{\concat{\commentwidth}{cm}}
+			\tablecomment
+			\end{minipage}
+		};
+		% draw page info
+		\draw (\headerwidth, \tableheight) node[above left] {\small \var{page_signature}};
+		% draw grid
+		\clip (0, 0) rectangle (\tablewidth, \tableheight);
+		\draw[dashed, black!25!white] (0, 0) grid (\tablewidth, \tableheight);
+		\draw[dotted, black!35!white, xshift=0.5cm, yshift=0.5cm] (-1, -1) grid (\tablewidth, \tableheight);
+		\draw[very thick] (0, 0) rectangle (\tablewidth, \tableheight);
+		% draw reference characters
+		%% for ch in chars
+                %%     set char_x = loop.index0 % logic_written_width + 0.5
+                %%     set char_y =  logic_written_height * 2 - loop.index0 // logic_written_width * 2 - 0.5
+		\draw (\var{char_x}, \var{char_y}) node {\CJKfamily{referencefont} \LARGE \char"\var{ch | upper}};
+		%% endfor
+		\end{tikzpicture}
+	};
+	\end{tikzpicture}
+	\newpage
+	%% endfor
+\end{document}
